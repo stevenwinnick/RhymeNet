@@ -132,12 +132,18 @@ def makeVowelSoundsList(dictionary):
     for word in dictionary:
         if 'phonemes' in dictionary[word]:
             for phoneme in dictionary[word]['phonemes'][0]:
-                if (phoneme in vowel_sound_list) and (PHONEMES_LIST[phoneme] == VOWEL):
-                    vowel_sound_list[phoneme].append(word)
-                else:
-                    vowel_sound_list[phoneme] = [word]
+                no_number = re.sub(r'[0-9]', '', phoneme)
+                if (no_number in vowel_sound_list) and (PHONEMES_LIST[no_number] == VOWEL):
+                    if word not in vowel_sound_list[no_number]:
+                        vowel_sound_list[no_number].add(word)
+                elif PHONEMES_LIST[no_number] == VOWEL:
+                    vowel_sound_list[no_number] = set()
+                    vowel_sound_list[no_number].add(word)
         else:
             pass
+    
+    for vowel_sound in vowel_sound_list:
+        vowel_sound_list[vowel_sound] = list(vowel_sound_list[vowel_sound])
 
     return vowel_sound_list
 
@@ -180,6 +186,8 @@ def makeLastSylRhymeList(dictionary):
             for idx in range(last_vowel_sound_idx, len(last_syllable)):
                 rhyme_string += last_syllable[idx]
                 rhyme_string += '_'
+            rhyme_string = rhyme_string[:-1]
+            rhyme_string = re.sub(r'[0-9]', '', rhyme_string)
             dictionary[word]['last_syl_rhyme'] = rhyme_string
             if rhyme_string in syl_rhyme_list:
                     syl_rhyme_list[rhyme_string].append(word)
@@ -274,7 +282,7 @@ if __name__ == '__main__':
         'syllables': phoneme_syllables,
         'vowel_sounds': vowel_sounds,
         'after_stress_rhymes': after_stress_rhymes,
-        'last_syl_rhymes': last_syl_rhymes
+        'last_syllable_rhymes': last_syl_rhymes
     }
 
     # Save 

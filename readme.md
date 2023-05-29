@@ -6,6 +6,16 @@ As far as I can tell, there is no agreed-upon best way to syllabize words (break
 
 To create this dataset, I started with version 0.7b of the CMU Pronouncing Dictionary, which contains the pronunciations of over 134,000 words via 39 phonemes based on the ARPAbet symbol set. I parsed these using the Greedy Onset Clustering method described below, then added the written syllabification of each of these words from the Project Gutenberg EBook of Webster's Unabridged Dictionary from August 22, 2009.
 
+## Version 1.0 Database Features
+- Words: 201,000 English words, containing
+    - 134,303 contain their phoenetic syllables, parsed from the CMU Pronouncing Dictionary
+    - 91,057 contain their written syllables from Webster's Unabridged Dictionary
+    - 24,360 of these contain both
+- Syllables: each of the 15279 unique phoenetic syllables found in the 134,303 words in the CMU Pronouncing Dictionary and each word containing them
+- Vowel Sounds: each of the 15 vowel sounds and each word containing them
+- After Stress Rhymes: each of the 50,302 phoenetic rhymes coming after the primary stressed vowel sound and each word containing them
+- Last Syllable Rhymes: each of the 2,611 phoenetic last syllables and each word containing them
+
 ## Phonetic Syllabization: Greedy Onset Clustering
 To syllabize words based on their phonemes, I use greedy onset clustering (see Anderson's Essentials of Linguistics in references). Essentially, syllables are constructed in a way that maximizes the number of non-vowel sounds at the start of each syllable. However, not all consonants after a vowel sound get sent to the start of the next syllable - there are a limited number of "consonant clusters" (Pearce) that are allowed. Again, there is much disagreement on what consonant clusters exist in English. To determine which to include in the algorithm to create this dataset, I followed the paper "What Consonant Clusters Are Possible?" (Alego), which examines a variety of studies into this question and gives explanations as to why some researchers consider some combinations to be clusters while others don't. I started by accepting all clusters that were included in all studies, then selecting based on my own opinions which others would be suitable for this task, often by searching the CMU dictionary for all examples of them and deeciding based on whichever way seemed correct more often, with the choice typically seeming fairly clear.
 
