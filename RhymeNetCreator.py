@@ -132,7 +132,7 @@ def makeVowelSoundsList(dictionary):
     for word in dictionary:
         if 'phonemes' in dictionary[word]:
             for phoneme in dictionary[word]['phonemes'][0]:
-                if phoneme in vowel_sound_list:
+                if (phoneme in vowel_sound_list) and (PHONEMES_LIST[phoneme] == VOWEL):
                     vowel_sound_list[phoneme].append(word)
                 else:
                     vowel_sound_list[phoneme] = [word]
@@ -140,6 +140,53 @@ def makeVowelSoundsList(dictionary):
             pass
 
     return vowel_sound_list
+
+def makeStressRhymeList(dictionary):
+    
+    stress_rhyme_list = {}
+
+    for word in dictionary:
+        if 'phonemes' in dictionary[word]:
+            primary_stress_idx = -1
+            for idx, phoneme in enumerate(dictionary[word]['phonemes'][0]):
+                if phoneme[-1] == '1':
+                    primary_stress_idx = idx
+            rhyme_string = ''
+            for idx in range(primary_stress_idx, len(dictionary[word]['phonemes'][0])):
+                rhyme_string += dictionary[word]['phonemes'][0][idx]
+                rhyme_string += '_'
+            rhyme_string = rhyme_string[:-1]
+            rhyme_string = re.sub(r'[0-9]', '', rhyme_string)
+            dictionary[word]['after_stress_rhyme'] = rhyme_string
+            if rhyme_string in stress_rhyme_list:
+                    stress_rhyme_list[rhyme_string].append(word)
+            else:
+                stress_rhyme_list[rhyme_string] = [word]
+
+    return stress_rhyme_list
+
+def makeLastSylRhymeList(dictionary):
+    
+    syl_rhyme_list = {}
+
+    for word in dictionary:
+        if 'phoneme_syllables' in dictionary[word]:
+            last_syllable = dictionary[word]['phoneme_syllables'][-1]
+            last_vowel_sound_idx = -1
+            for idx, phoneme in enumerate(last_syllable):
+                if (PHONEMES_LIST[phoneme] == VOWEL):
+                    last_vowel_sound_idx = idx
+            rhyme_string = ''
+            for idx in range(last_vowel_sound_idx, len(last_syllable)):
+                rhyme_string += last_syllable[idx]
+                rhyme_string += '_'
+            dictionary[word]['last_syl_rhyme'] = rhyme_string
+            if rhyme_string in syl_rhyme_list:
+                    syl_rhyme_list[rhyme_string].append(word)
+            else:
+                syl_rhyme_list[rhyme_string] = [word]
+
+    return syl_rhyme_list
 
 def phonemeSyllabize(phonemes: list):
 
@@ -205,7 +252,7 @@ def phonemeSyllabize(phonemes: list):
 if __name__ == '__main__':
 
     if len(argv) != 3:
-        print("Usage: [old db filepath] [output db filepath]")
+        print("Usage: [old db filepath] [output db filepath]") # python3 RhymeNetCreator.py none RhymeNetV1.0
         exit()
 
     english = defaultdict(dict)
@@ -219,11 +266,15 @@ if __name__ == '__main__':
     addWrittenSyllables(english, 'websters.txt', True) # websters too
     phoneme_syllables = makePhonemeSylList(english)
     vowel_sounds = makeVowelSoundsList(english)
+    after_stress_rhymes = makeStressRhymeList(english)
+    last_syl_rhymes = makeLastSylRhymeList(english)
 
     dataset = {
         'words': english,
         'syllables': phoneme_syllables,
-        'vowel sounds': vowel_sounds
+        'vowel_sounds': vowel_sounds,
+        'after_stress_rhymes': after_stress_rhymes,
+        'last_syl_rhymes': last_syl_rhymes
     }
 
     # Save 
