@@ -1,7 +1,7 @@
 # Imports
 from os import path
 from sys import argv
-from json import dumps
+from json import load, dumps
 from collections import defaultdict
 from phonemes import *
 import re
@@ -104,6 +104,43 @@ def addWrittenSyllables(dictionary: dict, written_dict_path: str, add_new: bool)
                 else:
                     cur_line = file.readline()
 
+def makePhonemeSylList(dictionary):
+    
+    phoneme_syl_list = {}
+
+    for word in dictionary:
+        if 'phoneme_syllables' in dictionary[word]:
+            for syllable in dictionary[word]['phoneme_syllables']:
+                sylstring = ''
+                for phoneme in syllable:
+                    sylstring += phoneme
+                    sylstring += '_'
+                sylstring = re.sub(r'[0-9]', '', sylstring)
+                if sylstring in phoneme_syl_list:
+                    phoneme_syl_list[sylstring].append(word)
+                else:
+                    phoneme_syl_list[sylstring] = [word]
+        else:
+            pass
+
+    return phoneme_syl_list
+
+def makeVowelSoundsList(dictionary):
+    
+    vowel_sound_list = {}
+
+    for word in dictionary:
+        if 'phonemes' in dictionary[word]:
+            for phoneme in dictionary[word]['phonemes'][0]:
+                if phoneme in vowel_sound_list:
+                    vowel_sound_list[phoneme].append(word)
+                else:
+                    vowel_sound_list[phoneme] = [word]
+        else:
+            pass
+
+    return vowel_sound_list
+
 def phonemeSyllabize(phonemes: list):
 
     syllables = []
@@ -176,11 +213,20 @@ if __name__ == '__main__':
     # Load previous version if not creating from scratch
     if path.isfile(argv[1]):
         print("Input file found")
+        english = load(open(argv[1]))
 
     addPronouncedSyllables(english, 'cmudict-0.7b.txt', True) # cmudict file should be in this directory
     addWrittenSyllables(english, 'websters.txt', True) # websters too
+    phoneme_syllables = makePhonemeSylList(english)
+    vowel_sounds = makeVowelSoundsList(english)
+
+    dataset = {
+        'words': english,
+        'syllables': phoneme_syllables,
+        'vowel sounds': vowel_sounds
+    }
 
     # Save 
-    json_object = dumps(english)
+    json_object = dumps(dataset)
     with open(argv[2], "w") as outfile:
         outfile.write(json_object)
